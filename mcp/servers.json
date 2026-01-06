@@ -45,5 +45,18 @@
     "env": {
       "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
     }
+  },
+  "ai-elements": {
+    "name": "AI Elements",
+    "description": "Access to the AI SDK registry for UI components and elements.",
+    "command": "npx",
+    "args": ["-y", "mcp-remote", "https://registry.ai-sdk.dev/api/mcp"],
+    "env": {}
+  },
+  "convex": {
+    "name": "Convex",
+    "description": "Convex database operations and management via Convex.",
+    "command": "npx",
+    "args": ["-y", "convex@latest", "mcp", "start"]
   }
 }

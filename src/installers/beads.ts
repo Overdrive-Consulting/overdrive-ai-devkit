@@ -1,5 +1,7 @@
+import { join } from "path";
 import { execa } from "execa";
 import { printSuccess, printError, printInfo, printWarning } from "../utils/ui";
+import { appendMarkdownIfNew } from "../utils/merge";
 
 async function isBdInstalled(): Promise<boolean> {
   try {
@@ -24,10 +26,11 @@ export interface InstallBeadsOptions {
   mode: "full" | "mcp" | "skip";
   forClaude: boolean;
   forCursor: boolean;
+  forOpencode: boolean;
 }
 
 export async function installBeads(options: InstallBeadsOptions): Promise<boolean> {
-  const { targetDir, mode, forClaude, forCursor } = options;
+  const { targetDir, mode, forClaude, forCursor, forOpencode } = options;
 
   if (mode === "skip") {
     return true;
@@ -82,6 +85,28 @@ export async function installBeads(options: InstallBeadsOptions): Promise<boolea
       printSuccess("Beads Cursor integration configured");
     } catch (error) {
       printWarning("Failed to configure beads for Cursor");
+    }
+  }
+
+  // OpenCode: bd setup opencode is not supported, so we add instructions to AGENTS.md
+  if (forOpencode) {
+    printInfo("Setting up beads for OpenCode...");
+    const agentsPath = join(targetDir, "AGENTS.md");
+    const beadsInstructions = `<!-- adk-beads -->
+## Beads Issue Tracker
+
+Use the \`bd\` CLI for task tracking. Essential commands:
+- \`bd ready\` - List tasks with no open blockers
+- \`bd create "Title" -p 0\` - Create a P0 task
+- \`bd show <id>\` - View task details
+- \`bd close <id>\` - Close completed task
+
+For more commands, run \`bd help\`.
+`;
+    if (appendMarkdownIfNew(agentsPath, beadsInstructions, "<!-- adk-beads -->")) {
+      printSuccess("Beads instructions added to AGENTS.md");
+    } else {
+      printInfo("Beads instructions already in AGENTS.md");
     }
   }
 

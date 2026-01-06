@@ -62,6 +62,27 @@ export function mergeMcpConfig(
 }
 
 /**
+ * Merge OpenCode config into existing opencode.json
+ */
+export function mergeOpencodeConfig(
+  targetPath: string,
+  newConfig: Record<string, unknown>
+) {
+  let existing: Record<string, unknown> = {};
+
+  if (fileExists(targetPath)) {
+    try {
+      existing = readJson(targetPath);
+    } catch {
+      // File exists but is invalid JSON, start fresh
+    }
+  }
+
+  const merged = deepMerge(existing, newConfig);
+  writeJson(targetPath, merged);
+}
+
+/**
  * Append content to a markdown file if not already present
  */
 export function appendMarkdownIfNew(

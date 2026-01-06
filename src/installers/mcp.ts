@@ -1,6 +1,6 @@
 import { join } from "path";
 import { readJson, getProjectRoot, fileExists } from "../utils/files";
-import { mergeMcpConfig } from "../utils/merge";
+import { mergeMcpConfig, mergeOpencodeConfig } from "../utils/merge";
 import { printSuccess, printInfo } from "../utils/ui";
 
 interface McpServerConfig {
@@ -71,20 +71,42 @@ function buildCursorMcpServerConfig(server: McpServerConfig) {
   return config;
 }
 
+function buildOpencodeMcpServerConfig(server: McpServerConfig) {
+  if (server.url) {
+    return {
+      type: "remote",
+      url: server.url,
+    };
+  }
+
+  const config: Record<string, unknown> = {
+    type: "local",
+    command: [server.command, ...(server.args || [])],
+  };
+
+  if (server.env && Object.keys(server.env).length > 0) {
+    config.environment = server.env;
+  }
+
+  return config;
+}
+
 export interface InstallMcpOptions {
   targetDir: string;
   serverKeys: string[];
   forClaude: boolean;
   forCursor: boolean;
+  forOpencode: boolean;
 }
 
 export function installMcpServers(options: InstallMcpOptions) {
-  const { targetDir, serverKeys, forClaude, forCursor } = options;
+  const { targetDir, serverKeys, forClaude, forCursor, forOpencode } = options;
   const allServers = getAvailableMcpServers();
 
   // Build server configs for selected servers
   const claudeServers: Record<string, unknown> = {};
   const cursorServers: Record<string, unknown> = {};
+  const opencodeServers: Record<string, unknown> = {};
 
   for (const key of serverKeys) {
     const server = allServers[key];
@@ -92,6 +114,7 @@ export function installMcpServers(options: InstallMcpOptions) {
 
     claudeServers[key] = buildMcpServerConfig(server);
     cursorServers[key] = buildCursorMcpServerConfig(server);
+    opencodeServers[key] = buildOpencodeMcpServerConfig(server);
   }
 
   if (forClaude && Object.keys(claudeServers).length > 0) {
@@ -104,6 +127,12 @@ export function installMcpServers(options: InstallMcpOptions) {
     const mcpPath = join(targetDir, ".cursor", "mcp.json");
     mergeMcpConfig(mcpPath, cursorServers);
     printSuccess(`Added MCP servers to .cursor/mcp.json`);
+  }
+
+  if (forOpencode && Object.keys(opencodeServers).length > 0) {
+    const configPath = join(targetDir, "opencode.json");
+    mergeOpencodeConfig(configPath, { mcp: opencodeServers });
+    printSuccess(`Added MCP servers to opencode.json`);
   }
 
   // Print env var hints

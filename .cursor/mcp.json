@@ -1,19 +1,13 @@
 {
   "mcpServers": {
     "context7": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
         "@upstash/context7-mcp@latest"
       ]
     },
-    "exa": {
-      "type": "http",
-      "url": "https://mcp.exa.ai/mcp"
-    },
     "supabase": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -22,14 +16,6 @@
       "env": {
         "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
       }
-    },
-    "ast-grep": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic/mcp-ast-grep"
-      ]
     }
   }
 }

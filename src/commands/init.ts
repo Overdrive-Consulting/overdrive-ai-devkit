@@ -4,6 +4,7 @@ import { printBanner, printSuccess, printInfo, printSuccessBox } from "../utils/
 import { getMcpServerOptions, installMcpServers } from "../installers/mcp";
 import { getCommandOptions, getSkillOptions, installClaude } from "../installers/claude";
 import { installCursor } from "../installers/cursor";
+import { installOpencode } from "../installers/opencode";
 import { installBeads } from "../installers/beads";
 import { getRuleOptions, installRules } from "../installers/rules";
 import { installContinuousClaude } from "../installers/continuous-claude";
@@ -27,6 +28,11 @@ export async function runInit() {
         label: "Cursor",
         hint: "Commands, MCP servers, rules",
       },
+      {
+        value: "opencode",
+        label: "OpenCode",
+        hint: "Commands, skills, rules (AGENTS.md)",
+      },
     ],
     required: true,
   });
@@ -38,6 +44,7 @@ export async function runInit() {
 
   const forClaude = (tools as string[]).includes("claude");
   const forCursor = (tools as string[]).includes("cursor");
+  const forOpencode = (tools as string[]).includes("opencode");
 
   // Step 2: Select MCP servers
   const mcpOptions = getMcpServerOptions();
@@ -56,9 +63,9 @@ export async function runInit() {
     process.exit(0);
   }
 
-  // Step 3: Select skills (if Claude selected)
+  // Step 3: Select skills (if Claude or OpenCode selected)
   let selectedSkills: string[] = [];
-  if (forClaude) {
+  if (forClaude || forOpencode) {
     const skillOptions = getSkillOptions();
     if (skillOptions.length > 0) {
       const skills = await p.multiselect({
@@ -148,11 +155,11 @@ export async function runInit() {
     process.exit(0);
   }
 
-  // Step 7: Continuous Claude setup (if Claude selected)
+  // Step 7: Continuous Claude setup (Claude Code only)
   let continuousClaudeChoice: string = "skip";
   if (forClaude) {
     const ccChoice = await p.select({
-      message: "Set up Continuous Claude (session continuity & advanced skills)?",
+      message: "Set up Continuous Claude (session continuity & advanced skills)? [Claude Code only]",
       options: [
         {
           value: "full",
@@ -225,6 +232,7 @@ export async function runInit() {
       serverKeys: mcpServers as string[],
       forClaude,
       forCursor,
+      forOpencode,
     });
     spinner.stop("MCP servers configured");
   }
@@ -250,7 +258,18 @@ export async function runInit() {
     spinner.stop("Cursor configured");
   }
 
-  // Install rules (for both Claude and Cursor)
+  // Install OpenCode components
+  if (forOpencode) {
+    spinner.start("Installing OpenCode components...");
+    installOpencode({
+      targetDir,
+      commands: selectedCommands,
+      skills: selectedSkills,
+    });
+    spinner.stop("OpenCode configured");
+  }
+
+  // Install rules (for Claude, Cursor, and OpenCode)
   if (selectedRules.length > 0) {
     spinner.start("Installing rules...");
     installRules({
@@ -258,6 +277,7 @@ export async function runInit() {
       rules: selectedRules,
       forClaude,
       forCursor,
+      forOpencode,
     });
     spinner.stop("Rules configured");
   }
@@ -270,6 +290,7 @@ export async function runInit() {
       mode: beadsChoice as "full" | "mcp",
       forClaude,
       forCursor,
+      forOpencode,
     });
     spinner.stop("Beads configured");
   }

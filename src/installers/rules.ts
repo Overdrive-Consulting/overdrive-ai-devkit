@@ -1,6 +1,7 @@
 import { join } from "path";
 import { readdirSync } from "fs";
 import { copyFile, ensureDir, fileExists, getProjectRoot, readFile } from "../utils/files";
+import { appendMarkdownIfNew } from "../utils/merge";
 import { printSuccess, printInfo } from "../utils/ui";
 
 export function getAvailableRules(): string[] {
@@ -46,10 +47,11 @@ export interface InstallRulesOptions {
   rules: string[];
   forClaude: boolean;
   forCursor: boolean;
+  forOpencode: boolean;
 }
 
 export function installRules(options: InstallRulesOptions) {
-  const { targetDir, rules, forClaude, forCursor } = options;
+  const { targetDir, rules, forClaude, forCursor, forOpencode } = options;
   const root = getProjectRoot();
 
   if (rules.length === 0) {
@@ -91,6 +93,23 @@ export function installRules(options: InstallRulesOptions) {
 
       copyFile(src, dest);
       printSuccess(`Added Cursor rule: ${rule}`);
+    }
+  }
+
+  // Install to OpenCode (append to AGENTS.md)
+  if (forOpencode) {
+    const agentsPath = join(targetDir, "AGENTS.md");
+
+    for (const rule of rules) {
+      const src = join(root, "rules", `${rule}.md`);
+      const content = readFile(src);
+      const identifier = `<!-- adk-rule:${rule} -->`;
+
+      if (appendMarkdownIfNew(agentsPath, `${identifier}\n${content}`, identifier)) {
+        printSuccess(`Added OpenCode rule to AGENTS.md: ${rule}`);
+      } else {
+        printInfo(`Skipping OpenCode rule ${rule} (already in AGENTS.md)`);
+      }
     }
   }
 }
