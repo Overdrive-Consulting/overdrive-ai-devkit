@@ -1,6 +1,6 @@
 {
   "name": "@enteroverdrive/ai-devkit",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Bootstrap AI coding tools (Claude Code, Cursor, OpenCode) into your projects",
   "type": "module",
   "bin": {
