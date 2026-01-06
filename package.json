@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "dev": "bun run src/cli.ts",
-    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core",
+    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core --external consola",
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit"
   },

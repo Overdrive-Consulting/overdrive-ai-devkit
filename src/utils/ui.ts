@@ -3,7 +3,13 @@ import pc from "picocolors";
 import chalkAnimation from "chalk-animation";
 import { createSpinner } from "nanospinner";
 import boxen from "boxen";
-import { consola } from "consola";
+import { createConsola } from "consola";
+
+const consola = createConsola({
+  formatOptions: {
+    date: false,
+  },
+});
 
 const BANNER = `
    ___   ____  __ __
