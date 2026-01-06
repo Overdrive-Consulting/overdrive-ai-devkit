@@ -3,7 +3,6 @@ import { printBanner, printInfo, printSuccess, printWarning } from "../utils/ui"
 import { getProjectRoot, readFile, fileExists } from "../utils/files";
 import { join } from "path";
 import { readdirSync } from "fs";
-import pc from "picocolors";
 
 interface UpdateItem {
   type: "command" | "skill" | "mcp";
@@ -99,7 +98,6 @@ export async function runUpdate() {
   const targetDir = process.cwd();
 
   printInfo("Checking for updates...");
-  console.log("");
 
   const updates = findUpdates(targetDir);
 
@@ -114,24 +112,21 @@ export async function runUpdate() {
 
   // Show what's available
   if (newItems.length > 0) {
-    console.log(pc.green("New items available:"));
+    printSuccess("New items available:");
     for (const item of newItems) {
-      console.log(`  ${pc.green("+")} ${item.name}`);
+      printSuccess(`  + ${item.name}`);
     }
-    console.log("");
   }
 
   if (updatedItems.length > 0) {
-    console.log(pc.yellow("Updates available:"));
+    printWarning("Updates available:");
     for (const item of updatedItems) {
-      console.log(`  ${pc.yellow("~")} ${item.name}`);
+      printWarning(`  ~ ${item.name}`);
     }
-    console.log("");
   }
 
   if (unchangedItems.length > 0) {
-    console.log(pc.dim(`${unchangedItems.length} items unchanged`));
-    console.log("");
+    printInfo(`${unchangedItems.length} items unchanged`);
   }
 
   // Ask what to update

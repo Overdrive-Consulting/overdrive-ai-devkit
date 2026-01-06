@@ -204,28 +204,26 @@ export async function runInit() {
   }
 
   // Step 9: Confirmation
-  console.log("");
   printInfo("Summary:");
-  console.log(pc.dim("  Target: ") + targetDir);
-  console.log(pc.dim("  Tools: ") + (tools as string[]).join(", "));
+  printInfo(`  Target: ${targetDir}`);
+  printInfo(`  Tools: ${(tools as string[]).join(", ")}`);
   if ((mcpServers as string[]).length > 0) {
-    console.log(pc.dim("  MCP: ") + (mcpServers as string[]).join(", "));
+    printInfo(`  MCP: ${(mcpServers as string[]).join(", ")}`);
   }
   if (selectedSkills.length > 0) {
-    console.log(pc.dim("  Skills: ") + selectedSkills.join(", "));
+    printInfo(`  Skills: ${selectedSkills.join(", ")}`);
   }
   if (selectedCommands.length > 0) {
-    console.log(pc.dim("  Commands: ") + selectedCommands.map(c => `/${c}`).join(", "));
+    printInfo(`  Commands: ${selectedCommands.map(c => `/${c}`).join(", ")}`);
   }
   if (selectedRules.length > 0) {
-    console.log(pc.dim("  Rules: ") + selectedRules.join(", "));
+    printInfo(`  Rules: ${selectedRules.join(", ")}`);
   }
-  console.log(pc.dim("  Beads: ") + beadsChoice);
+  printInfo(`  Beads: ${beadsChoice}`);
   if (forClaude) {
-    console.log(pc.dim("  Continuous Claude: ") + continuousClaudeChoice);
-    console.log(pc.dim("  Safety Net: ") + (safetyNetChoice ? "yes" : "no"));
+    printInfo(`  Continuous Claude: ${continuousClaudeChoice}`);
+    printInfo(`  Safety Net: ${safetyNetChoice ? "yes" : "no"}`);
   }
-  console.log("");
 
   const confirm = await p.confirm({
     message: "Proceed with installation?",
@@ -237,7 +235,6 @@ export async function runInit() {
   }
 
   // Execute installation
-  console.log("");
 
   const spinner = p.spinner();
 
@@ -333,8 +330,6 @@ export async function runInit() {
     });
     spinner.stop("Safety Net configured");
   }
-
-  console.log("");
 
   const summaryLines = ["✓ AI DevKit setup complete!"];
   if ((mcpServers as string[]).includes("supabase")) {

@@ -22,12 +22,11 @@ async function main() {
     case "--help":
     case "-h":
       await printBanner();
-      console.log("Usage: adk <command>\n");
-      console.log("Commands:");
-      console.log("  init     Bootstrap AI tools into current project (default)");
-      console.log("  update   Update commands/skills from registry");
-      console.log("  help     Show this help message");
-      console.log("");
+      printInfo("Usage: adk <command>\n");
+      printInfo("Commands:");
+      printInfo("  init     Bootstrap AI tools into current project (default)");
+      printInfo("  update   Update commands/skills from registry");
+      printInfo("  help     Show this help message");
       break;
 
     default:

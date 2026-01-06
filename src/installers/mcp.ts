@@ -150,7 +150,7 @@ export function installMcpServers(options: InstallMcpOptions) {
   if (envVars.size > 0) {
     printInfo("Required environment variables:");
     for (const envVar of envVars) {
-      console.log(`  ${envVar}`);
+      printInfo(`  ${envVar}`);
     }
   }
 }

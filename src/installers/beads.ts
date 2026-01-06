@@ -38,10 +38,10 @@ export async function installBeads(options: InstallBeadsOptions): Promise<boolea
 
   if (mode === "mcp") {
     printInfo("To use beads MCP server, install it with:");
-    console.log("  uv tool install beads-mcp");
-    console.log("  # or: pip install beads-mcp");
+    printInfo("  uv tool install beads-mcp");
+    printInfo("  # or: pip install beads-mcp");
     printInfo("Then add to your MCP config:");
-    console.log('  { "beads": { "command": "beads-mcp" } }');
+    printInfo('  { "beads": { "command": "beads-mcp" } }');
     return true;
   }
 
@@ -51,8 +51,8 @@ export async function installBeads(options: InstallBeadsOptions): Promise<boolea
   if (!bdInstalled) {
     printWarning("bd (beads CLI) is not installed");
     printInfo("Install it with one of:");
-    console.log("  brew install beads-dev/tap/bd");
-    console.log("  # or: curl -fsSL https://beads.dev/install.sh | sh");
+    printInfo("  brew install beads-dev/tap/bd");
+    printInfo("  # or: curl -fsSL https://beads.dev/install.sh | sh");
     printInfo("After installing, run 'adk init' again to complete beads setup");
     return false;
   }

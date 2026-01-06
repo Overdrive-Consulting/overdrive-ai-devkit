@@ -3,6 +3,7 @@ import pc from "picocolors";
 import chalkAnimation from "chalk-animation";
 import { createSpinner } from "nanospinner";
 import boxen from "boxen";
+import { consola } from "consola";
 
 const BANNER = `
    ___   ____  __ __
@@ -21,28 +22,28 @@ export async function printBanner(): Promise<void> {
     process.stdout.write("\x1B[5A\x1B[0J"); // Clear animation, reprint static
   }
 
-  console.log(coolGradient(BANNER));
-  console.log(pc.dim("  Bootstrap AI coding tools into your project\n"));
+  consola.log(coolGradient(BANNER));
+  consola.log(pc.dim("  Bootstrap AI coding tools into your project\n"));
 }
 
 export function printSuccess(message: string) {
-  console.log(pc.green("✓ ") + message);
+  consola.success(message);
 }
 
 export function printError(message: string) {
-  console.log(pc.red("✗ ") + message);
+  consola.error(message);
 }
 
 export function printInfo(message: string) {
-  console.log(pc.blue("ℹ ") + message);
+  consola.info(message);
 }
 
 export function printWarning(message: string) {
-  console.log(pc.yellow("⚠ ") + message);
+  consola.warn(message);
 }
 
 export function printStep(step: number, total: number, message: string) {
-  console.log(pc.dim(`[${step}/${total}]`) + " " + message);
+  consola.info(`[${step}/${total}] ${message}`);
 }
 
 export function spinner(text: string) {
@@ -50,7 +51,7 @@ export function spinner(text: string) {
 }
 
 export function printSuccessBox(lines: string[]) {
-  console.log(
+  consola.log(
     boxen(lines.join("\n"), {
       padding: 1,
       borderStyle: "round",
