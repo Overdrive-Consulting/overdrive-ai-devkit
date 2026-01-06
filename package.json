@@ -1,6 +1,6 @@
 {
   "name": "@enteroverdrive/ai-devkit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Bootstrap AI coding tools (Claude Code, Cursor, OpenCode) into your projects",
   "type": "module",
   "bin": {
@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "dev": "bun run src/cli.ts",
-    "build": "bun build src/cli.ts --outdir dist --target node --format esm",
+    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core",
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit"
   },
