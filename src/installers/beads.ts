@@ -57,10 +57,17 @@ export async function installBeads(options: InstallBeadsOptions): Promise<boolea
     return false;
   }
 
-  // Initialize beads
+  // Common execa options: ignore stdin to prevent interactive prompts from hanging
+  // but still show stdout/stderr for progress output
+  const nonInteractiveOpts = {
+    cwd: targetDir,
+    stdio: ["ignore", "inherit", "inherit"] as const,
+  };
+
+  // Initialize beads (skip hooks here, we'll install them separately)
   try {
     printInfo("Initializing beads...");
-    await execa("bd", ["init"], { cwd: targetDir, stdio: "inherit" });
+    await execa("bd", ["init", "--skip-hooks"], nonInteractiveOpts);
     printSuccess("Beads initialized");
   } catch (error) {
     printError("Failed to initialize beads");
@@ -71,7 +78,7 @@ export async function installBeads(options: InstallBeadsOptions): Promise<boolea
   if (forClaude) {
     try {
       printInfo("Setting up beads for Claude Code...");
-      await execa("bd", ["setup", "claude"], { cwd: targetDir, stdio: "inherit" });
+      await execa("bd", ["setup", "claude"], nonInteractiveOpts);
       printSuccess("Beads Claude Code integration configured");
     } catch (error) {
       printWarning("Failed to configure beads for Claude Code");
@@ -81,7 +88,7 @@ export async function installBeads(options: InstallBeadsOptions): Promise<boolea
   if (forCursor) {
     try {
       printInfo("Setting up beads for Cursor...");
-      await execa("bd", ["setup", "cursor"], { cwd: targetDir, stdio: "inherit" });
+      await execa("bd", ["setup", "cursor"], nonInteractiveOpts);
       printSuccess("Beads Cursor integration configured");
     } catch (error) {
       printWarning("Failed to configure beads for Cursor");
@@ -115,10 +122,11 @@ For more commands, run \`bd help\`.
   if (isGit) {
     try {
       printInfo("Installing beads git hooks...");
-      await execa("bd", ["hooks", "install", "--shared"], { cwd: targetDir, stdio: "inherit" });
+      // Use --force to overwrite without prompting
+      await execa("bd", ["hooks", "install", "--shared", "--force"], nonInteractiveOpts);
       printSuccess("Beads git hooks installed");
     } catch (error) {
-      printWarning("Failed to install beads git hooks");
+      printWarning("Failed to install beads git hooks (run 'bd hooks install --shared' manually)");
     }
   }
 

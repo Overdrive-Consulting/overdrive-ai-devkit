@@ -279,9 +279,8 @@ export async function runInit() {
     spinner.stop("Rules configured");
   }
 
-  // Install beads
+  // Install beads (no spinner - installBeads has its own interactive output)
   if (beadsChoice !== "skip") {
-    spinner.start("Setting up beads...");
     await installBeads({
       targetDir,
       mode: beadsChoice as "full" | "mcp",
@@ -289,7 +288,6 @@ export async function runInit() {
       forCursor,
       forOpencode,
     });
-    spinner.stop("Beads configured");
   }
 
   // Install continuous-claude
