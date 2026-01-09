@@ -13,6 +13,12 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Overdrive-Consulting">
+    <img src="https://img.shields.io/badge/Overdrive-Consulting-blue?style=flat-square&logo=github" />
+  </a>
+</p>
+
+<p align="center">
   <a href="#quick-start">Quick Start</a> •
   <a href="#features">Features</a> •
   <a href="#commands">Commands</a> •
@@ -416,6 +422,13 @@ Based on **[Continuous Claude v2](https://github.com/parcadei/Continuous-Claude-
 MIT
 
 ---
+
+<p align="center">
+  <a href="https://github.com/Konan69">
+    <img src="https://img.shields.io/badge/Built%20by-Konan-red?style=for-the-badge&logo=github" />
+  </a>
+  🏎️
+</p>
 
 <p align="center">
   Made with ❤️ for developers who ship fast with AI
