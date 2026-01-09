@@ -28,41 +28,46 @@
 
 **AI DevKit** is a unified CLI that provisions AI coding tools across your projects. Instead of manually configuring Claude Code, Cursor, and OpenCode separately—copying files, setting up MCP servers, adding rules—run one command and ship faster.
 
-```bash
-bunx ai-devkit init
-```
-
-Select your tools, pick your MCP servers, choose skills and commands. Done.
-
 ---
 
 ## Quick Start
 
-### Prerequisites
-
-- [Bun](https://bun.sh) (v1.0+) or Node.js (v18+)
-
-### Install & Run
+### Run Without Installing
 
 ```bash
-# Run directly (no install needed)
-bunx ai-devkit
+# Using npx (Node.js)
+npx @enteroverdrive/ai-devkit
 
-# Or install globally
-bun add -g ai-devkit
-adk init
+# Using bunx (Bun)
+bunx @enteroverdrive/ai-devkit
 ```
 
-### Interactive Setup
+### Or Install Globally
 
-The CLI guides you through:
+```bash
+# Using npm
+npm install -g @enteroverdrive/ai-devkit
+adk
+
+# Using Bun
+bun add -g @enteroverdrive/ai-devkit
+adk
+```
+
+### Prerequisites
+
+- Node.js (v18+) or [Bun](https://bun.sh) (v1.0+)
+
+### What Happens Next?
+
+The interactive CLI guides you through:
 
 1. **Select AI tools** — Claude Code, Cursor, OpenCode
 2. **Pick MCP servers** — Context7, Exa, Supabase, Morph, AST-Grep, Perplexity, Convex
 3. **Choose skills** — Frontend design, TDD, debugging, code search
 4. **Install commands** — `/deslop`, `/onboard`, `/security-audit`, and more
 5. **Add rules** — Convex guidelines, UV package management
-6. **Configure extras** — Beads, Continuous Claude (CC only), Safety Net (CC only)
+6. **Configure extras** — Beads, Continuous Claude, Safety Net
 
 ---
 
@@ -130,25 +135,31 @@ Framework-specific guidelines:
 
 ## Commands
 
-### `adk init`
+### `init`
 
-Bootstrap AI tools into the current project. This is the default command.
+Bootstrap AI tools into the current project. Default command.
 
 ```bash
+# If installed globally
 adk init
 # or just
 adk
+
+# Run directly without installing
+npx @enteroverdrive/ai-devkit
 ```
 
-### `adk update`
+### `update`
 
 Check for updates to installed commands and skills, then selectively apply them.
 
 ```bash
 adk update
+# or
+npx @enteroverdrive/ai-devkit update
 ```
 
-### `adk help`
+### `help`
 
 Show usage information.
 
@@ -339,25 +350,34 @@ ai-devkit/
 ### Setup
 
 ```bash
+# Install dependencies
 bun install
+# or
+npm install
 ```
 
 ### Run Locally
 
 ```bash
 bun run dev
+# or
+npm run dev
 ```
 
 ### Type Check
 
 ```bash
 bun run typecheck
+# or
+npm run typecheck
 ```
 
 ### Build
 
 ```bash
 bun run build
+# or
+npm run build
 ```
 
 ---
