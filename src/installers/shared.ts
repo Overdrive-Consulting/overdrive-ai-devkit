@@ -9,6 +9,8 @@ import {
   readFile,
 } from "../utils/files";
 import { printSuccess, printInfo } from "../utils/ui";
+import { agents } from "../agents";
+import type { AgentConfig, AgentType } from "../types";
 
 export function getAvailableCommands(): string[] {
   const root = getProjectRoot();
@@ -90,37 +92,21 @@ export interface InstallOptions {
   skills: string[];
 }
 
-interface AgentConfig {
-  dir: string;
-  name: string;
-  commandsSubdir?: string;
-  skillsSubdir?: string;
-}
-
-const AGENTS: Record<string, AgentConfig> = {
-  claude: { dir: ".claude", name: "Claude Code" },
-  cursor: { dir: ".cursor", name: "Cursor" },
-  opencode: {
-    dir: ".opencode",
-    name: "OpenCode",
-    commandsSubdir: "command",
-    skillsSubdir: "skill",
-  },
-};
-
 function installForAgent(agent: AgentConfig, options: InstallOptions) {
   const { targetDir, commands, skills } = options;
-  const {
-    dir,
-    name,
-    commandsSubdir = "commands",
-    skillsSubdir = "skills",
-  } = agent;
+  const agentDir = agent.skillsDir.split("/")[0] || agent.name;
+  const commandsSubdir = agent.commandsSubdir || "commands";
+  const skillsSubdir = "skills";
+  const name = agent.displayName;
   const root = getProjectRoot();
 
   // Install commands
   if (commands.length > 0) {
-    const targetCommandsDir = join(targetDir, dir, commandsSubdir);
+    const targetCommandsDir = join(
+      targetDir,
+      `.${agentDir.replace(/^\./, "")}`,
+      commandsSubdir,
+    );
     ensureDir(targetCommandsDir);
 
     for (const cmd of commands) {
@@ -141,7 +127,12 @@ function installForAgent(agent: AgentConfig, options: InstallOptions) {
   if (skills.length > 0) {
     for (const skill of skills) {
       const srcDir = join(root, "skills", skill);
-      const destDir = join(targetDir, dir, skillsSubdir, skill);
+      const destDir = join(
+        targetDir,
+        `.${agentDir.replace(/^\./, "")}`,
+        skillsSubdir,
+        skill,
+      );
 
       if (fileExists(join(destDir, "SKILL.md"))) {
         printInfo(`Skipping skill ${skill} (already exists in ${name})`);
@@ -155,11 +146,11 @@ function installForAgent(agent: AgentConfig, options: InstallOptions) {
 }
 
 export function installClaude(options: InstallOptions) {
-  installForAgent(AGENTS.claude, options);
+  installForAgent(agents["claude-code"], options);
 }
 
 export function installCursor(options: InstallOptions) {
-  installForAgent(AGENTS.cursor, options);
+  installForAgent(agents["cursor"], options);
 
   // Ensure rules directory exists
   const rulesDir = join(options.targetDir, ".cursor", "rules");
@@ -167,5 +158,13 @@ export function installCursor(options: InstallOptions) {
 }
 
 export function installOpencode(options: InstallOptions) {
-  installForAgent(AGENTS.opencode, options);
+  installForAgent(agents["opencode"], options);
+}
+
+/** Install bundled assets for any agent type */
+export function installForAgentType(
+  agentType: AgentType,
+  options: InstallOptions,
+) {
+  installForAgent(agents[agentType], options);
 }

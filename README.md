@@ -5,96 +5,231 @@
 <h1 align="center">AI DevKit</h1>
 
 <p align="center">
-  <strong>Bootstrap AI coding environments in seconds.</strong>
+  <strong>The universal package manager for AI coding agents.</strong>
 </p>
 
 <p align="center">
-  MCP servers · Claude Code skills · Cursor rules · Commands · Safety nets
+  Install skills, commands, rules, and MCP servers across 40+ AI tools in seconds.
 </p>
 
 <p align="center">
-  <a href="https://github.com/Overdrive-Consulting">
-    <img src="https://img.shields.io/badge/Overdrive-Consulting-blue?style=flat-square&logo=github" />
+  <a href="https://www.npmjs.com/package/@enteroverdrive/ai-devkit">
+    <img src="https://img.shields.io/npm/v/@enteroverdrive/ai-devkit?style=flat-square&color=blue" alt="npm version" />
+  </a>
+  <a href="https://www.npmjs.com/package/@enteroverdrive/ai-devkit">
+    <img src="https://img.shields.io/npm/dm/@enteroverdrive/ai-devkit?style=flat-square" alt="npm downloads" />
+  </a>
+  <a href="https://github.com/Overdrive-Consulting/overdrive-ai-devkit/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/Overdrive-Consulting/overdrive-ai-devkit/ci.yml?style=flat-square&label=CI" alt="CI" />
+  </a>
+  <a href="https://github.com/Overdrive-Consulting/overdrive-ai-devkit/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/Overdrive-Consulting/overdrive-ai-devkit?style=flat-square" alt="license" />
   </a>
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#features">Features</a> •
-  <a href="#commands">Commands</a> •
-  <a href="#skills">Skills</a> •
-  <a href="#mcp-servers">MCP Servers</a> •
-  <a href="#rules">Rules</a> •
-  <a href="#safety-net">Safety Net</a>
+  <a href="#quick-start">Quick Start</a> &middot;
+  <a href="#commands">Commands</a> &middot;
+  <a href="#supported-agents">40+ Agents</a> &middot;
+  <a href="#bundled-assets">Bundled Assets</a> &middot;
+  <a href="#external-skills">External Skills</a> &middot;
+  <a href="#configuration">Configuration</a>
 </p>
 
 ---
 
 ## What is this?
 
-**AI DevKit** is a unified CLI that provisions AI coding tools across your projects. Instead of manually configuring Claude Code, Cursor, and OpenCode separately—copying files, setting up MCP servers, adding rules—run one command and ship faster.
+AI DevKit is a CLI that installs and manages **skills**, **commands**, **rules**, and **MCP servers** for AI coding agents. Think of it as `npm` for AI agent capabilities.
+
+- **40+ agents supported** — Claude Code, Cursor, Codex, Windsurf, Cline, Roo Code, and many more
+- **Auto-detection** — Detects which agents you have installed
+- **Fuzzy search UI** — Interactive selection with type-to-filter across all prompts
+- **External skill sourcing** — Install skills from GitHub repos or local paths
+- **Lock file tracking** — `.ai-devkit-lock.json` tracks everything installed
+- **Bundled + external** — Ships with curated skills and supports any GitHub repo
 
 ---
 
 ## Quick Start
 
-### Run Without Installing
-
 ```bash
-# Using npx (Node.js)
+# Run without installing
 npx @enteroverdrive/ai-devkit
 
-# Using bunx (Bun)
-bunx @enteroverdrive/ai-devkit
-```
-
-### Or Install Globally
-
-```bash
-# Using npm
+# Or install globally
 npm install -g @enteroverdrive/ai-devkit
 adk
-
-# Using Bun
-bun add -g @enteroverdrive/ai-devkit
-adk
 ```
 
-### Prerequisites
+The interactive wizard walks you through:
 
-- Node.js (v18+) or [Bun](https://bun.sh) (v1.0+)
-
-### What Happens Next?
-
-The interactive CLI guides you through:
-
-1. **Select AI tools** — Claude Code, Cursor, OpenCode
+1. **Select AI tools** — Fuzzy-search across 40+ agents, auto-detects installed ones
 2. **Pick MCP servers** — Context7, Exa, Supabase, Morph, AST-Grep, Perplexity, Convex
-3. **Choose skills** — Frontend design, TDD, debugging, code search
-4. **Install commands** — `/deslop`, `/onboard`, `/security-audit`, and more
-5. **Add rules** — Convex guidelines, UV package management
-6. **Configure extras** — Beads, Continuous Claude, Safety Net
+3. **Choose skills** — Frontend design, TDD, debugging, code search, and more
+4. **Install commands** — `/deslop`, `/onboard`, `/security-audit`, `/visualize`
+5. **Add rules** — Framework-specific guidelines (Convex, UV)
+6. **Configure extras** — Beads issue tracker, Continuous Claude, Safety Net
 
 ---
 
-## Features
+## Commands
 
-### 🛠 Multi-Tool Support
+### `adk init`
 
-| Tool | What Gets Installed |
-|------|---------------------|
-| **Claude Code** | `.claude/` directory with commands, skills, MCP config |
-| **Cursor** | `.cursor/` directory with commands, MCP config, rules |
-| **OpenCode** | `AGENTS.md`, commands, skills |
+Interactive setup wizard. Default command when running `adk` with no arguments.
 
-### 🔌 MCP Server Registry
+```bash
+adk                  # same as adk init
+adk init
+```
 
-Pre-configured MCP servers ready to install:
+### `adk add`
+
+Install skills, commands, or rules from GitHub repos or local paths.
+
+```bash
+# From GitHub
+adk add skill owner/repo
+adk add skill owner/repo@specific-skill
+
+# From local path
+adk add skill ./my-skills
+
+# With options
+adk add skill owner/repo --global          # Install globally (~/)
+adk add skill owner/repo --yes             # Skip all prompts
+adk add skill owner/repo --list            # Preview without installing
+adk add skill owner/repo --all             # Install everything to all agents
+adk add skill owner/repo --full-depth      # Deep recursive search
+adk add skill owner/repo --skill s1 s2     # Filter specific skills
+adk add skill owner/repo --agent claude-code cursor  # Target specific agents
+
+# Commands and rules
+adk add command owner/repo
+adk add rule owner/repo
+```
+
+### `adk remove`
+
+Remove installed assets.
+
+```bash
+adk remove                           # Interactive selection
+adk remove skill debug               # Remove by name
+adk remove --all                     # Remove everything
+adk remove skill debug --agent cursor claude-code  # From specific agents
+```
+
+### `adk list`
+
+List installed assets.
+
+```bash
+adk list                # All assets
+adk list skill          # Skills only
+adk list -g             # Global assets
+adk list --agent cursor # Filter by agent
+```
+
+### `adk find`
+
+Search [skills.sh](https://skills.sh) for community skills.
+
+```bash
+adk find auth           # Search and show results
+adk find                # Interactive fuzzy search, auto-installs on selection
+```
+
+### `adk create`
+
+Scaffold a new skill, command, or rule.
+
+```bash
+adk create skill my-skill       # Creates my-skill/SKILL.md + README.md
+adk create command my-command    # Creates my-command.md with frontmatter
+adk create rule my-rule          # Creates my-rule.md with frontmatter
+```
+
+### `adk check`
+
+Check if any GitHub-sourced skills have upstream updates available. Uses the GitHub Trees API to compare stored tree SHAs against the current repo state.
+
+```bash
+adk check                # Check project assets
+adk check -g             # Check global assets
+```
+
+### `adk update`
+
+Check for and apply updates to outdated GitHub-sourced skills. Re-installs skills whose upstream source has changed.
+
+```bash
+adk update               # Interactive update
+adk update -g            # Update global assets
+adk update -y            # Skip confirmation prompt
+```
+
+---
+
+## Supported Agents
+
+AI DevKit supports **40+ AI coding tools**. Each agent has its own directory structure, and skills are installed to the right location automatically.
+
+| Agent | Skills Directory | Global Directory |
+|-------|-----------------|------------------|
+| **Claude Code** | `.claude/skills/` | `~/.claude/skills/` |
+| **Cursor** | `.cursor/skills/` | `~/.cursor/skills/` |
+| **Codex** | `.agents/skills/` | `~/.codex/skills/` |
+| **OpenCode** | `.agents/skills/` | `~/.config/opencode/skills/` |
+| **Windsurf** | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
+| **Cline** | `.cline/skills/` | `~/.cline/skills/` |
+| **Roo Code** | `.roo/skills/` | `~/.roo/skills/` |
+| **GitHub Copilot** | `.agents/skills/` | `~/.copilot/skills/` |
+| **Gemini CLI** | `.agents/skills/` | `~/.gemini/skills/` |
+| **Continue** | `.continue/skills/` | `~/.continue/skills/` |
+| **Goose** | `.goose/skills/` | `~/.config/goose/skills/` |
+| **Amp** | `.agents/skills/` | `~/.config/agents/skills/` |
+
+Plus 28 more: Augment, CodeBuddy, Command Code, Crush, Droid, iFlow CLI, Junie, Kilo Code, Kimi CLI, Kiro CLI, Kode, MCPJam, Mistral Vibe, Mux, Neovate, OpenClaw, OpenHands, Pi, Pochi, Qoder, Qwen Code, Replit, Trae, Trae CN, Zencoder, AdaL, Antigravity.
+
+---
+
+## Bundled Assets
+
+### Skills
+
+| Skill | Description |
+|-------|-------------|
+| `frontend-design` | Create distinctive, production-grade UIs with bold aesthetics |
+| `test-driven-development` | Enforce red-green-refactor TDD discipline |
+| `debug` | Investigate issues via logs, database, git history without editing files |
+| `morph-search` | 20x faster text/regex search via WarpGrep |
+| `ast-grep-find` | Structural code search using AST patterns |
+| `qlty-check` | Universal code quality, linting, and formatting |
+| `code-simplifier` | Reduce complexity and remove unnecessary abstractions |
+| `web-design-guidelines` | Interface design principles and patterns |
+| `better-auth-best-practices` | Authentication implementation guidelines |
+| `react-best-practices` | React and Next.js performance optimization |
+
+### Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/deslop` | Remove AI-generated code smell from your branch |
+| `/onboard` | Comprehensive developer onboarding workflow |
+| `/security-audit` | Security review with remediation steps |
+| `/visualize` | Generate mermaid diagrams for data lineage |
+| `/interview` | In-depth interviews about feature plans |
+| `/add-documentation` | Add comprehensive documentation for code |
+| `/changelog` | Generate changelogs from git history |
+
+### MCP Servers
 
 | Server | Description |
 |--------|-------------|
 | **Context7** | Up-to-date documentation lookup for any library |
-| **Exa** | Web search, code context, and research tools |
+| **Exa** | Web search, code context, and research |
 | **Supabase** | Database operations via Supabase |
 | **Morph** | Fast codebase search (20x faster than grep) |
 | **AST-Grep** | AST-based code search and refactoring |
@@ -102,223 +237,104 @@ Pre-configured MCP servers ready to install:
 | **AI Elements** | Access to the AI SDK component registry |
 | **Convex** | Convex database operations |
 
-### 📦 Skills Library
+### Rules
 
-Skills are reusable instructions that enhance AI capabilities:
-
-| Skill | Purpose |
-|-------|---------|
-| `frontend-design` | Create distinctive, production-grade UIs that avoid generic "AI slop" |
-| `test-driven-development` | Enforce red-green-refactor discipline |
-| `debug` | Investigate issues via logs, database, git history |
-| `morph-search` | Fast codebase search using WarpGrep |
-| `ast-grep-find` | Structural code search with AST patterns |
-| `qlty-check` | Code quality, linting, and formatting via qlty CLI |
-
-### ⚡ Slash Commands
-
-Commands are single-action prompts you can invoke:
-
-| Command | What It Does |
-|---------|--------------|
-| `/deslop` | Remove AI-generated code smell from your branch |
-| `/onboard` | Comprehensive developer onboarding workflow |
-| `/security-audit` | Perform a security review with remediation steps |
-| `/visualize` | Generate mermaid diagrams for data lineage |
-| `/interview` | Conduct in-depth interviews about feature plans |
-| `/add-documentation` | Add comprehensive documentation for code |
-
-### 📏 Rules Library
-
-Framework-specific guidelines:
-
-| Rule | Scope |
-|------|-------|
-| `convex` | Convex best practices, schema design, function patterns |
+| Rule | Description |
+|------|-------------|
+| `convex` | Convex best practices — schema design, function patterns, full-text search |
 | `uv` | Python package management with UV |
 
 ---
 
-## Commands
+## External Skills
 
-### `init`
-
-Bootstrap AI tools into the current project. Default command.
+Install skills from any GitHub repo that follows the [SKILL.md convention](https://skills.sh):
 
 ```bash
-# If installed globally
-adk init
-# or just
-adk
+# GitHub shorthand
+adk add skill owner/repo
 
-# Run directly without installing
-npx @enteroverdrive/ai-devkit
+# Specific skill from a multi-skill repo
+adk add skill owner/repo@skill-name
+
+# GitHub URL with branch
+adk add skill https://github.com/owner/repo/tree/main/skills
+
+# Local directory
+adk add skill ./my-local-skills
+
+# Preview what's available
+adk add skill owner/repo --list
+
+# Install everything non-interactively
+adk add skill owner/repo --all -g
 ```
 
-### `update`
-
-Check for updates to installed commands and skills, then selectively apply them.
-
-```bash
-adk update
-# or
-npx @enteroverdrive/ai-devkit update
-```
-
-### `help`
-
-Show usage information.
-
-```bash
-adk help
-```
+Skills are discovered by scanning for `SKILL.md` files with `name` and `description` frontmatter across 30+ known directory patterns.
 
 ---
 
-## Skills
+## Configuration
 
-Skills are markdown files that provide specialized instructions to AI assistants. They're installed to `.claude/skills/` (Claude Code) or referenced in `AGENTS.md` (OpenCode).
+### Project Config
 
-### Frontend Design
+Create `devkit.config.mjs` in your project root to restrict available agents:
 
-Creates distinctive, production-grade interfaces. Enforces:
-
-- **Bold aesthetic direction** — brutally minimal, maximalist, retro-futuristic, etc.
-- **Distinctive typography** — no generic Inter/Roboto/Arial
-- **Motion and micro-interactions** — scroll-triggering, hover states
-- **Unique spatial composition** — asymmetry, overlap, grid-breaking
-
-### Test-Driven Development
-
-Enforces the TDD discipline:
-
-```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```js
+export default {
+  agents: ["claude-code", "cursor", "opencode"],
+  skills: ["debug", "frontend-design"],
+};
 ```
 
-- Write test → Watch it fail → Write minimal code → Refactor
-- No exceptions, no rationalizations
+When `agents` is set, `adk init` only shows those agents in the selection.
 
-### Debug
+### Lock File
 
-Investigate issues without editing files:
-
-- Check logs, database state, git history
-- Spawn parallel investigation tasks
-- Present structured debug reports
-
-### Code Search Skills
-
-- **morph-search**: 20x faster text/regex search via WarpGrep
-- **ast-grep-find**: Structural code search that understands syntax
-- **qlty-check**: Universal linting, formatting, and metrics
-
----
-
-## MCP Servers
-
-MCP (Model Context Protocol) servers extend AI capabilities. The devkit includes a curated registry in `mcp/servers.json`.
-
-### Configuration
-
-Servers are installed to:
-
-- **Claude Code**: `.mcp.json`
-- **Cursor**: `.cursor/mcp.json`
-
-### Environment Variables
-
-Some servers require API keys:
-
-```bash
-# Supabase
-export SUPABASE_ACCESS_TOKEN="your-token"
-
-# Morph (WarpGrep)
-export MORPH_API_KEY="your-key"
-
-# Perplexity
-export PERPLEXITY_API_KEY="your-key"
-```
-
----
-
-## Rules
-
-Rules are framework-specific guidelines installed as markdown files.
-
-### Convex Rules
-
-Comprehensive guidelines for Convex projects:
-
-- Function syntax (new format with validators)
-- HTTP endpoint registration
-- Schema design patterns
-- Query and mutation best practices
-- Full-text search, pagination, scheduling
-- TypeScript typing with `Id<"table">`
-
-### UV Rules
-
-Python package management with UV:
-
-```bash
-uv add <package>     # Add dependencies
-uv remove <package>  # Remove dependencies
-uv sync              # Reinstall from lockfile
-uv run script.py     # Run with dependencies
-```
-
----
-
-## Safety Net (Claude Code Only)
-
-The devkit includes **[Claude Code Safety Net](https://github.com/kenryu42/claude-code-safety-net)** by [kenryu42](https://github.com/kenryu42) — a protection layer that blocks destructive commands before they execute. This feature is automatically installed when you select Claude Code during `adk init`.
-
-### Why It Exists
-
-AI agents can accidentally run commands like:
-
-- `git reset --hard` — destroys uncommitted changes
-- `git checkout -- file` — discards changes permanently
-- `rm -rf ~/` — catastrophic file deletion
-- `git push --force` — destroys remote history
-
-### What Gets Blocked
-
-| Category | Examples |
-|----------|----------|
-| **Git destructive** | `git reset --hard`, `git checkout -- files`, `git clean -f` |
-| **Git history** | `git push --force`, `git branch -D`, `git stash clear` |
-| **File deletion** | `rm -rf` outside cwd, `rm -rf /`, `rm -rf ~` |
-| **Dynamic execution** | `xargs rm -rf`, `find -delete`, shell wrappers |
-
-### What's Allowed
-
-| Category | Examples |
-|----------|----------|
-| **Safe git** | `git checkout -b`, `git restore --staged`, `git branch -d` |
-| **Safe deletion** | `rm -rf /tmp/*`, `rm -rf ./build` (within cwd) |
-| **Preview** | `git clean -n`, `--dry-run` variants |
-
-### Custom Rules
-
-Create `.safety-net.json` in your project:
+AI DevKit tracks installed assets in `.ai-devkit-lock.json`:
 
 ```json
 {
   "version": 1,
-  "rules": [
-    {
-      "name": "block-git-add-all",
-      "command": "git",
-      "subcommand": "add",
-      "block_args": ["-A", "--all", "."],
-      "reason": "Use 'git add <specific-files>' instead."
+  "assets": {
+    "skill:debug": {
+      "type": "skill",
+      "source": "bundled",
+      "sourceUrl": "@enteroverdrive/ai-devkit",
+      "contentHash": "abc123",
+      "installedAt": "2025-01-01T00:00:00.000Z"
     }
-  ]
+  },
+  "lastSelectedAgents": ["claude-code", "cursor"]
 }
 ```
+
+### Environment Variables
+
+Some MCP servers require API keys:
+
+```bash
+export SUPABASE_ACCESS_TOKEN="your-token"     # Supabase
+export MORPH_API_KEY="your-key"               # Morph (WarpGrep)
+export PERPLEXITY_API_KEY="your-key"          # Perplexity
+```
+
+---
+
+## Safety Net (Claude Code)
+
+Optional protection layer that blocks destructive commands before execution. Based on [claude-code-safety-net](https://github.com/kenryu42/claude-code-safety-net).
+
+**What gets blocked:**
+
+| Category | Examples |
+|----------|----------|
+| Git destructive | `git reset --hard`, `git checkout -- files`, `git clean -f` |
+| Git history | `git push --force`, `git branch -D`, `git stash clear` |
+| File deletion | `rm -rf` outside cwd, `rm -rf /`, `rm -rf ~` |
+| Dynamic execution | `xargs rm -rf`, `find -delete` |
+
+**Customizable** via `.safety-net.json` in your project root.
 
 ---
 
@@ -327,83 +343,70 @@ Create `.safety-net.json` in your project:
 ```
 ai-devkit/
 ├── src/
-│   ├── cli.ts              # Entry point
+│   ├── cli.ts                    # Entry point and command router
+│   ├── agents.ts                 # 40+ agent registry with detection
+│   ├── config.ts                 # devkit.config.ts loader
+│   ├── constants.ts              # Shared constants
+│   ├── types.ts                  # TypeScript type definitions
 │   ├── commands/
-│   │   ├── init.ts         # Interactive setup
-│   │   └── update.ts       # Update checker
+│   │   ├── init.ts               # Interactive setup wizard
+│   │   ├── add.ts                # Install from GitHub/local
+│   │   ├── remove.ts             # Remove installed assets
+│   │   ├── list.ts               # List installed assets
+│   │   ├── find.ts               # Search skills.sh
+│   │   ├── create.ts             # Scaffold new assets
+│   │   └── update.ts             # Update checker
 │   ├── installers/
-│   │   ├── claude.ts       # Claude Code installer
-│   │   ├── cursor.ts       # Cursor installer
-│   │   ├── opencode.ts     # OpenCode installer
-│   │   ├── mcp.ts          # MCP server installer
-│   │   ├── rules.ts        # Rules installer
-│   │   ├── beads.ts        # Beads issue tracker
-│   │   ├── safety-net.ts   # Safety Net (CC only)
-│   │   └── continuous-claude.ts  # (CC only)
+│   │   ├── skill-installer.ts    # Copy-based skill installer
+│   │   ├── external-installer.ts # Skill/command/rule discovery
+│   │   ├── shared.ts             # Shared installation logic
+│   │   ├── mcp.ts                # MCP server installer
+│   │   ├── rules.ts              # Rules installer
+│   │   ├── beads.ts              # Beads issue tracker
+│   │   ├── safety-net.ts         # Safety Net (Claude Code)
+│   │   └── continuous-claude.ts  # Session continuity
+│   ├── prompts/
+│   │   └── search-multiselect.ts # Fuzzy search multiselect UI
 │   └── utils/
-├── commands/               # Slash command templates
-├── skills/                 # Skill definitions
-├── rules/                  # Framework rules
+│       ├── lock.ts               # Lock file CRUD
+│       ├── source-parser.ts      # GitHub/local path parser
+│       ├── git.ts                # Git clone operations
+│       ├── frontmatter.ts        # YAML frontmatter parser
+│       ├── skills-api.ts         # skills.sh API client
+│       └── ui.ts                 # Terminal UI helpers
+├── commands/                     # Bundled slash commands
+├── skills/                       # Bundled skill definitions
+├── rules/                        # Bundled framework rules
 ├── mcp/
-│   └── servers.json        # MCP server registry
-└── claude-code-safety-net/ # Safety net plugin
+│   └── servers.json              # MCP server registry
+└── __tests__/                    # Test suite (54 tests)
 ```
 
 ---
 
 ## Development
 
-### Setup
-
 ```bash
 # Install dependencies
 bun install
-# or
-npm install
-```
 
-### Run Locally
-
-```bash
+# Run locally
 bun run dev
-# or
-npm run dev
-```
 
-### Type Check
-
-```bash
+# Type check
 bun run typecheck
-# or
-npm run typecheck
-```
 
-### Build
+# Run tests
+bun run test
 
-```bash
+# Build
 bun run build
-# or
-npm run build
 ```
 
----
+### CI/CD
 
-## Extras
-
-### Beads Integration
-
-[Beads](https://github.com/beads-ai/beads-cli) is an issue tracker designed for AI agents. The CLI can:
-
-- **Full setup**: Install CLI, initialize beads, configure hooks
-- **MCP only**: Just add the beads MCP server
-
-### Continuous Claude
-
-Based on **[Continuous Claude v2](https://github.com/parcadei/Continuous-Claude-v2)** — session continuity for Claude Code with:
-
-- `thoughts/` directory for persistent context
-- Ledgers for tracking work
-- Handoff notes between sessions
+- **CI** runs on PRs and pushes to `main`: typecheck, test, build
+- **Publish** auto-detects `[patch]` or `[minor]` in commit messages and publishes to npm with provenance
 
 ---
 
@@ -412,7 +415,7 @@ Based on **[Continuous Claude v2](https://github.com/parcadei/Continuous-Claude-
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run type checks: `bun run typecheck`
+4. Run `bun run typecheck && bun run test`
 5. Submit a pull request
 
 ---
@@ -427,9 +430,8 @@ MIT
   <a href="https://github.com/Konan69">
     <img src="https://img.shields.io/badge/Built%20by-Konan-red?style=for-the-badge&logo=github" />
   </a>
-  🏎️
 </p>
 
 <p align="center">
-  Made with ❤️ for developers who ship fast with AI
+  Made for developers who ship fast with AI
 </p>
