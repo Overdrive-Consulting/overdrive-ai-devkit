@@ -8,6 +8,11 @@ import { runList } from "./commands/list";
 import { runFind } from "./commands/find";
 import { runCreate } from "./commands/create";
 import { printBanner, printError, printInfo } from "./utils/ui";
+import { notifyUpdate } from "./utils/update-notifier";
+
+const VERSION = "0.0.4";
+
+notifyUpdate(VERSION);
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -81,6 +86,11 @@ async function main() {
       printInfo("  adk list skill");
       printInfo("  adk find auth");
       printInfo("  adk create skill my-skill");
+      break;
+
+    case "--version":
+    case "-v":
+      console.log(VERSION);
       break;
 
     default:

@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "dev": "bun run src/cli.ts",
-    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core --external consola --external boxen --external simple-git --external gray-matter",
+    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core --external consola --external boxen --external simple-git --external gray-matter && bun build src/utils/update-check-worker.ts --outfile dist/update-check-worker.js --target node --format esm",
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
