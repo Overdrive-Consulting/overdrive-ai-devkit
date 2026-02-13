@@ -17,13 +17,16 @@
   ],
   "scripts": {
     "dev": "bun run src/cli.ts",
-    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core --external consola --external boxen",
+    "build": "bun build src/cli.ts --outdir dist --target node --format esm --external @clack/prompts --external @clack/core --external consola --external boxen --external simple-git --external gray-matter",
     "prepublishOnly": "bun run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/gradient-string": "^1.1.6"
+    "@types/gradient-string": "^1.1.6",
+    "vitest": "^3.0.5"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -36,8 +39,10 @@
     "consola": "^3.4.2",
     "execa": "^9.6.1",
     "gradient-string": "^3.0.0",
+    "gray-matter": "^4.0.3",
     "nanospinner": "^1.2.2",
     "picocolors": "^1.1.1",
+    "simple-git": "^3.27.0",
     "tinyglobby": "^0.2.15",
     "zod": "^4.3.2"
   }

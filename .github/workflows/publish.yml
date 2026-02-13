@@ -1,0 +1,86 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Detect version bump from commit messages
+        id: bump
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${LAST_TAG}..HEAD"
+          fi
+
+          COMMITS=$(git log $RANGE --pretty=format:"%s" 2>/dev/null || echo "")
+
+          if echo "$COMMITS" | grep -q "\[minor\]"; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+          elif echo "$COMMITS" | grep -q "\[patch\]"; then
+            echo "bump=patch" >> $GITHUB_OUTPUT
+          else
+            echo "bump=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Version bump and publish
+        if: steps.bump.outputs.bump != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          npm version ${{ steps.bump.outputs.bump }} -m "chore: release v%s"
+          VERSION=$(node -p "require('./package.json').version")
+
+          git push origin main --tags
+
+          npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        if: steps.bump.outputs.bump != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            BODY="Initial release"
+          else
+            BODY=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+          fi
+
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --notes "${BODY}" \
+            --latest
