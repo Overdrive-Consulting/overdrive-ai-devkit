@@ -86,6 +86,8 @@ export interface AssetLockEntry {
   source: string;
   sourceType: string;
   sourceUrl: string;
+  /** Git ref used during installation (branch/tag/sha) for GitHub sources */
+  sourceRef?: string;
   assetPath?: string;
   contentHash: string;
   /** GitHub tree SHA for the skill folder — used for update detection */

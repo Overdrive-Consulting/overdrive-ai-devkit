@@ -37,7 +37,13 @@ async function checkGitHubAssets(
   // Group assets by owner/repo so we can batch API calls
   const repoGroups = new Map<
     string,
-    { key: string; entry: AssetLockEntry; owner: string; repo: string }[]
+    {
+      key: string;
+      entry: AssetLockEntry;
+      owner: string;
+      repo: string;
+      ref?: string;
+    }[]
   >();
 
   for (const [key, entry] of Object.entries(lock.assets)) {
@@ -56,18 +62,18 @@ async function checkGitHubAssets(
       continue;
     }
 
-    const repoKey = `${parsed.owner}/${parsed.repo}`;
+    const repoKey = `${parsed.owner}/${parsed.repo}@${entry.sourceRef || "HEAD"}`;
     const group = repoGroups.get(repoKey) || [];
-    group.push({ key, entry, ...parsed });
+    group.push({ key, entry, ...parsed, ref: entry.sourceRef });
     repoGroups.set(repoKey, group);
   }
 
   // Fetch tree SHAs per repo (one API call per repo)
   for (const [, group] of repoGroups) {
-    const { owner, repo } = group[0]!;
+    const { owner, repo, ref } = group[0]!;
     const skillPaths = group.map((g) => g.entry.skillPath!);
 
-    const hashes = await fetchSkillFolderHashes(owner, repo, skillPaths);
+    const hashes = await fetchSkillFolderHashes(owner, repo, skillPaths, ref);
 
     if (hashes.size === 0) {
       result.errors += group.length;
@@ -204,7 +210,7 @@ export async function runUpdate(args: string[] = []): Promise<void> {
         addArgs.push("--global");
       }
 
-      await runAdd(addArgs);
+      await runAdd(addArgs, { exitOnError: false });
       successCount++;
     } catch {
       p.log.error(pc.red(`Failed to update ${name}`));

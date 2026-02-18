@@ -242,6 +242,49 @@ export async function runRemove(args: string[]): Promise<void> {
         await rm(canonicalPath, { recursive: true, force: true }).catch(
           () => {},
         );
+      } else if (assetType === "command") {
+        if (isGlobal) {
+          p.log.error(
+            `Global removal for commands is not supported yet: ${assetName}`,
+          );
+          failCount++;
+          continue;
+        }
+
+        for (const agentKey of targetAgents) {
+          const agent = agents[agentKey];
+          const commandsSubdir = agent.commandsSubdir || "commands";
+          const agentDir = agent.skillsDir.split("/")[0] || agent.name;
+          const commandPath = join(
+            cwd,
+            `.${agentDir.replace(/^\./, "")}`,
+            commandsSubdir,
+            `${assetName}.md`,
+          );
+          await rm(commandPath, { force: true }).catch(() => {});
+        }
+      } else if (assetType === "rule") {
+        if (isGlobal) {
+          p.log.error(
+            `Global removal for rules is not supported yet: ${assetName}`,
+          );
+          failCount++;
+          continue;
+        }
+
+        for (const agentKey of targetAgents) {
+          const agent = agents[agentKey];
+          const rulesSubdir = agent.rulesSubdir || "rules";
+          const agentDir = agent.skillsDir.split("/")[0] || agent.name;
+          const ext = agentKey === "cursor" ? ".mdc" : ".md";
+          const rulePath = join(
+            cwd,
+            `.${agentDir.replace(/^\./, "")}`,
+            rulesSubdir,
+            `${assetName}${ext}`,
+          );
+          await rm(rulePath, { force: true }).catch(() => {});
+        }
       }
 
       // Remove from lock file

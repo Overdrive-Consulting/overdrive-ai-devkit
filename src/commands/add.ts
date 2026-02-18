@@ -45,6 +45,10 @@ interface AddOptions {
   fullDepth?: boolean;
 }
 
+interface RunAddOptions {
+  exitOnError?: boolean;
+}
+
 function parseAddArgs(args: string[]): {
   type: AssetType;
   source: string;
@@ -127,7 +131,11 @@ function shortenPath(fullPath: string, cwd: string): string {
   return fullPath;
 }
 
-export async function runAdd(args: string[]): Promise<void> {
+export async function runAdd(
+  args: string[],
+  runOptions: RunAddOptions = {},
+): Promise<void> {
+  const exitOnError = runOptions.exitOnError ?? true;
   const { type, source, options } = parseAddArgs(args);
 
   if (!source) {
@@ -144,7 +152,16 @@ export async function runAdd(args: string[]): Promise<void> {
     p.log.info("  --full-depth       Search all subdirectories for skills");
     p.log.info("  -s, --skill <n>    Filter specific skills");
     p.log.info("  -a, --agent <n>    Target specific agents");
-    process.exit(1);
+    if (exitOnError) process.exit(1);
+    throw new Error("Missing source. Usage: adk add <type> <source>");
+  }
+
+  if (options.global && (type === "command" || type === "rule")) {
+    p.log.error(
+      `Global installation is currently supported for skills only. '${type}' must be installed at project scope.`,
+    );
+    if (exitOnError) process.exit(1);
+    throw new Error(`Unsupported global install for ${type}`);
   }
 
   const parsed = parseSource(source);
@@ -157,8 +174,7 @@ export async function runAdd(args: string[]): Promise<void> {
     if (parsed.type === "local") {
       basePath = parsed.localPath!;
       if (!existsSync(basePath)) {
-        p.log.error(`Local path does not exist: ${basePath}`);
-        process.exit(1);
+        throw new Error(`Local path does not exist: ${basePath}`);
       }
     } else {
       const spinner = p.spinner();
@@ -169,7 +185,16 @@ export async function runAdd(args: string[]): Promise<void> {
     }
 
     if (type === "skill") {
-      await addSkills(basePath, parsed.subpath, parsed.skillFilter, options, cwd, source, parsed.type);
+      await addSkills(
+        basePath,
+        parsed.subpath,
+        parsed.skillFilter,
+        options,
+        cwd,
+        source,
+        parsed.type,
+        parsed.ref,
+      );
     } else if (type === "command") {
       await addCommands(basePath, options, cwd, source);
     } else if (type === "rule") {
@@ -197,7 +222,10 @@ export async function runAdd(args: string[]): Promise<void> {
       );
     }
     p.outro(pc.red("Installation failed"));
-    process.exit(1);
+    if (exitOnError) {
+      process.exit(1);
+    }
+    throw error instanceof Error ? error : new Error("Installation failed");
   } finally {
     if (tempDir) {
       await cleanupTempDir(tempDir);
@@ -213,6 +241,7 @@ async function addSkills(
   cwd: string,
   source: string,
   sourceType: "github" | "local" | "git" = "local",
+  sourceRef?: string,
 ): Promise<void> {
   const spinner = p.spinner();
 
@@ -264,8 +293,6 @@ async function addSkills(
   if (options.skill?.includes("*")) {
     selectedSkills = skills;
     p.log.info(`Installing all ${skills.length} skills`);
-  } else if (skills.length === 1 || options.yes) {
-    selectedSkills = skills;
   } else if (options.skill && options.skill.length > 0) {
     selectedSkills = filterSkills(skills, options.skill);
     if (selectedSkills.length === 0) {
@@ -279,6 +306,8 @@ async function addSkills(
     p.log.info(
       `Selected ${selectedSkills.length} skill(s): ${selectedSkills.map((s) => pc.cyan(getSkillDisplayName(s))).join(", ")}`,
     );
+  } else if (skills.length === 1 || options.yes) {
+    selectedSkills = skills;
   } else {
     const result = await searchMultiselect<Skill>({
       message: "Select skills to install",
@@ -389,8 +418,13 @@ async function addSkills(
 
   // Install skills
   const installSpinner = p.spinner();
+  const installSuccessBySkill = new Map<string, boolean>();
+  let failedInstalls = 0;
 
   for (const skill of selectedSkills) {
+    const skillName = getSkillDisplayName(skill);
+    installSuccessBySkill.set(skillName, false);
+
     for (const agentType of targetAgents) {
       installSpinner.start(
         `Installing ${getSkillDisplayName(skill)} for ${agents[agentType].displayName}...`,
@@ -402,17 +436,26 @@ async function addSkills(
       });
 
       if (result.success) {
+        installSuccessBySkill.set(skillName, true);
         const shortPath = shortenPath(result.path, cwd);
         installSpinner.stop(
-          `${pc.green("✓")} ${getSkillDisplayName(skill)} → ${shortPath}`,
+          `${pc.green("✓")} ${skillName} → ${shortPath}`,
         );
       } else {
+        failedInstalls++;
         installSpinner.stop(
-          `${pc.red("✗")} ${getSkillDisplayName(skill)} → ${agents[agentType].displayName}: ${result.error}`,
+          `${pc.red("✗")} ${skillName} → ${agents[agentType].displayName}: ${result.error}`,
         );
       }
     }
+  }
 
+  const successfullyInstalledSkills = selectedSkills.filter((skill) =>
+    installSuccessBySkill.get(getSkillDisplayName(skill)),
+  );
+
+  if (successfullyInstalledSkills.length === 0) {
+    throw new Error("Failed to install selected skills for all target agents.");
   }
 
   // Compute GitHub tree SHAs for update tracking (batch call)
@@ -424,7 +467,7 @@ async function addSkills(
     const { owner, repo } = parseOwnerRepo(source) || {};
     if (owner && repo) {
       const { relative } = await import("path");
-      const skillPaths = selectedSkills.map((s) =>
+      const skillPaths = successfullyInstalledSkills.map((s) =>
         relative(basePath, s.path),
       );
       folderHashes = await fetchSkillFolderHashes(
@@ -438,7 +481,7 @@ async function addSkills(
 
   // Update lock file for each skill
   const { relative } = await import("path");
-  for (const skill of selectedSkills) {
+  for (const skill of successfullyInstalledSkills) {
     const lockKey = `skill:${sanitizeName(getSkillDisplayName(skill))}`;
     const skillRelPath = relative(basePath, skill.path);
     const folderHash = folderHashes.get(skillRelPath);
@@ -450,6 +493,7 @@ async function addSkills(
         source: ownerRepo || source,
         sourceType: parsed.type,
         sourceUrl: source,
+        sourceRef: sourceRef,
         contentHash: computeContentHash(skill.rawContent || skill.name),
         skillFolderHash: folderHash,
         skillPath: sourceType !== "local" ? skillRelPath : undefined,
@@ -461,9 +505,13 @@ async function addSkills(
   // Save selected agents
   await saveSelectedAgents(targetAgents, isGlobal ? undefined : cwd);
 
-  p.log.success(
-    pc.green(`Successfully installed ${selectedSkills.length} skill(s)`),
-  );
+  p.log.success(pc.green(`Successfully installed ${successfullyInstalledSkills.length} skill(s)`));
+
+  if (failedInstalls > 0) {
+    throw new Error(
+      `Some installations failed (${failedInstalls} failed agent install${failedInstalls === 1 ? "" : "s"}).`,
+    );
+  }
 }
 
 async function addCommands(
@@ -488,6 +536,7 @@ async function addCommands(
   const { ensureDir, writeFile } = await import("../utils/files");
   const { join } = await import("path");
 
+  const parsed = parseSource(source);
   for (const cmd of commands) {
     for (const agentType of targetAgents) {
       const agent = agents[agentType];
@@ -511,8 +560,9 @@ async function addCommands(
       {
         type: "command",
         source: source,
-        sourceType: parseSource(source).type,
+        sourceType: parsed.type,
         sourceUrl: source,
+        sourceRef: parsed.ref,
         contentHash: computeContentHash(cmd.content),
       },
       cwd,
@@ -542,6 +592,7 @@ async function addRules(
   const { ensureDir, writeFile } = await import("../utils/files");
   const { join } = await import("path");
 
+  const parsed = parseSource(source);
   for (const rule of rules) {
     for (const agentType of targetAgents) {
       const agent = agents[agentType];
@@ -566,8 +617,9 @@ async function addRules(
       {
         type: "rule",
         source: source,
-        sourceType: parseSource(source).type,
+        sourceType: parsed.type,
         sourceUrl: source,
+        sourceRef: parsed.ref,
         contentHash: computeContentHash(rule.content),
       },
       cwd,
