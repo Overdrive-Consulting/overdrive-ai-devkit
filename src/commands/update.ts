@@ -23,6 +23,10 @@ interface CheckResult {
   errors: number;
 }
 
+function getAssetName(lockKey: string): string {
+  return lockKey.split(":").slice(1).join(":");
+}
+
 async function checkGitHubAssets(
   projectDir?: string,
 ): Promise<CheckResult> {
@@ -134,7 +138,7 @@ export async function runCheck(args: string[]): Promise<void> {
     pc.yellow(`${result.outdated.length} update(s) available:`),
   );
   for (const candidate of result.outdated) {
-    const name = candidate.key.split(":").slice(1).join(":");
+    const name = getAssetName(candidate.key);
     const source = `${candidate.owner}/${candidate.repo}`;
     p.log.message(`  ${pc.cyan(name)} ${pc.dim(`from ${source}`)}`);
   }
@@ -173,9 +177,11 @@ export async function runUpdate(args: string[] = []): Promise<void> {
 
   // Show what's outdated
   for (const candidate of result.outdated) {
-    const name = candidate.key.split(":").slice(1).join(":");
+    const name = getAssetName(candidate.key);
     const source = `${candidate.owner}/${candidate.repo}`;
-    p.log.message(`  ${pc.yellow("~")} ${pc.cyan(name)} ${pc.dim(`from ${source}`)}`);
+    p.log.message(
+      `  ${pc.yellow("~")} ${pc.cyan(name)} ${pc.dim(`from ${source}`)}`,
+    );
   }
 
   // Confirm
@@ -196,7 +202,7 @@ export async function runUpdate(args: string[] = []): Promise<void> {
   let failCount = 0;
 
   for (const candidate of result.outdated) {
-    const name = candidate.key.split(":").slice(1).join(":");
+    const name = getAssetName(candidate.key);
     try {
       const addArgs = [
         candidate.entry.type,

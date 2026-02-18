@@ -49,6 +49,13 @@ interface RunAddOptions {
   exitOnError?: boolean;
 }
 
+function exitOrThrow(exitOnError: boolean, message: string): never {
+  if (exitOnError) {
+    process.exit(1);
+  }
+  throw new Error(message);
+}
+
 function parseAddArgs(args: string[]): {
   type: AssetType;
   source: string;
@@ -152,16 +159,17 @@ export async function runAdd(
     p.log.info("  --full-depth       Search all subdirectories for skills");
     p.log.info("  -s, --skill <n>    Filter specific skills");
     p.log.info("  -a, --agent <n>    Target specific agents");
-    if (exitOnError) process.exit(1);
-    throw new Error("Missing source. Usage: adk add <type> <source>");
+    exitOrThrow(exitOnError, "Missing source. Usage: adk add <type> <source>");
   }
 
   if (options.global && (type === "command" || type === "rule")) {
     p.log.error(
       `Global installation is currently supported for skills only. '${type}' must be installed at project scope.`,
     );
-    if (exitOnError) process.exit(1);
-    throw new Error(`Unsupported global install for ${type}`);
+    exitOrThrow(
+      exitOnError,
+      `Global installation is currently supported for skills only. '${type}' must be installed at project scope.`,
+    );
   }
 
   const parsed = parseSource(source);
@@ -174,7 +182,7 @@ export async function runAdd(
     if (parsed.type === "local") {
       basePath = parsed.localPath!;
       if (!existsSync(basePath)) {
-        throw new Error(`Local path does not exist: ${basePath}`);
+        exitOrThrow(exitOnError, `Local path does not exist: ${basePath}`);
       }
     } else {
       const spinner = p.spinner();
@@ -427,7 +435,7 @@ async function addSkills(
 
     for (const agentType of targetAgents) {
       installSpinner.start(
-        `Installing ${getSkillDisplayName(skill)} for ${agents[agentType].displayName}...`,
+        `Installing ${skillName} for ${agents[agentType].displayName}...`,
       );
 
       const result = await installSkillForAgent(skill, agentType, {
@@ -505,7 +513,9 @@ async function addSkills(
   // Save selected agents
   await saveSelectedAgents(targetAgents, isGlobal ? undefined : cwd);
 
-  p.log.success(pc.green(`Successfully installed ${successfullyInstalledSkills.length} skill(s)`));
+  p.log.success(
+    pc.green(`Successfully installed ${successfullyInstalledSkills.length} skill(s)`),
+  );
 
   if (failedInstalls > 0) {
     throw new Error(

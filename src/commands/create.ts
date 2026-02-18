@@ -36,6 +36,11 @@ function ensureWithinCwd(path: string): boolean {
   return target === cwd || target.startsWith(cwd + sep);
 }
 
+function fail(message: string): never {
+  p.log.error(message);
+  process.exit(1);
+}
+
 export function sanitizeScaffoldName(
   input: string,
   kind: "skill" | "command" | "rule",
@@ -62,6 +67,17 @@ export function sanitizeScaffoldName(
   return trimmed;
 }
 
+function normalizeScaffoldName(
+  value: string,
+  kind: "skill" | "command" | "rule",
+): string {
+  try {
+    return sanitizeScaffoldName(value, kind);
+  } catch (error) {
+    fail(error instanceof Error ? error.message : `Invalid ${kind} name`);
+  }
+}
+
 async function createSkill(name?: string): Promise<void> {
   let skillName = name;
 
@@ -85,22 +101,15 @@ async function createSkill(name?: string): Promise<void> {
     skillName = input as string;
   }
 
-  try {
-    skillName = sanitizeScaffoldName(skillName, "skill");
-  } catch (error) {
-    p.log.error(error instanceof Error ? error.message : "Invalid skill name");
-    process.exit(1);
-  }
+  skillName = normalizeScaffoldName(skillName, "skill");
 
   const dir = join(process.cwd(), skillName);
   if (!ensureWithinCwd(dir)) {
-    p.log.error("Refusing to create skill outside the current directory.");
-    process.exit(1);
+    fail("Refusing to create skill outside the current directory.");
   }
 
   if (existsSync(dir)) {
-    p.log.error(`Directory already exists: ${skillName}`);
-    process.exit(1);
+    fail(`Directory already exists: ${skillName}`);
   }
 
   mkdirSync(dir, { recursive: true });
@@ -165,24 +174,15 @@ async function createCommand(name?: string): Promise<void> {
     cmdName = input as string;
   }
 
-  try {
-    cmdName = sanitizeScaffoldName(cmdName, "command");
-  } catch (error) {
-    p.log.error(
-      error instanceof Error ? error.message : "Invalid command name",
-    );
-    process.exit(1);
-  }
+  cmdName = normalizeScaffoldName(cmdName, "command");
 
   const filePath = join(process.cwd(), `${cmdName}.md`);
   if (!ensureWithinCwd(filePath)) {
-    p.log.error("Refusing to create command outside the current directory.");
-    process.exit(1);
+    fail("Refusing to create command outside the current directory.");
   }
 
   if (existsSync(filePath)) {
-    p.log.error(`File already exists: ${cmdName}.md`);
-    process.exit(1);
+    fail(`File already exists: ${cmdName}.md`);
   }
 
   const content = `---
@@ -221,22 +221,15 @@ async function createRule(name?: string): Promise<void> {
     ruleName = input as string;
   }
 
-  try {
-    ruleName = sanitizeScaffoldName(ruleName, "rule");
-  } catch (error) {
-    p.log.error(error instanceof Error ? error.message : "Invalid rule name");
-    process.exit(1);
-  }
+  ruleName = normalizeScaffoldName(ruleName, "rule");
 
   const filePath = join(process.cwd(), `${ruleName}.md`);
   if (!ensureWithinCwd(filePath)) {
-    p.log.error("Refusing to create rule outside the current directory.");
-    process.exit(1);
+    fail("Refusing to create rule outside the current directory.");
   }
 
   if (existsSync(filePath)) {
-    p.log.error(`File already exists: ${ruleName}.md`);
-    process.exit(1);
+    fail(`File already exists: ${ruleName}.md`);
   }
 
   const content = `---

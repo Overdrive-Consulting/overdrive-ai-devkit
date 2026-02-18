@@ -22,6 +22,34 @@ interface RemoveOptions {
   all?: boolean;
 }
 
+function getAgentSubdir(agentType: AgentType): string {
+  const agent = agents[agentType];
+  return agent.skillsDir.split("/")[0] || agent.name;
+}
+
+function getCommandPath(cwd: string, agentType: AgentType, name: string): string {
+  const agent = agents[agentType];
+  const commandsSubdir = agent.commandsSubdir || "commands";
+  return join(
+    cwd,
+    `.${getAgentSubdir(agentType).replace(/^\./, "")}`,
+    commandsSubdir,
+    `${name}.md`,
+  );
+}
+
+function getRulePath(cwd: string, agentType: AgentType, name: string): string {
+  const agent = agents[agentType];
+  const rulesSubdir = agent.rulesSubdir || "rules";
+  const ext = agentType === "cursor" ? ".mdc" : ".md";
+  return join(
+    cwd,
+    `.${getAgentSubdir(agentType).replace(/^\./, "")}`,
+    rulesSubdir,
+    `${name}${ext}`,
+  );
+}
+
 function parseRemoveArgs(args: string[]): {
   type?: AssetType;
   names: string[];
@@ -252,15 +280,7 @@ export async function runRemove(args: string[]): Promise<void> {
         }
 
         for (const agentKey of targetAgents) {
-          const agent = agents[agentKey];
-          const commandsSubdir = agent.commandsSubdir || "commands";
-          const agentDir = agent.skillsDir.split("/")[0] || agent.name;
-          const commandPath = join(
-            cwd,
-            `.${agentDir.replace(/^\./, "")}`,
-            commandsSubdir,
-            `${assetName}.md`,
-          );
+          const commandPath = getCommandPath(cwd, agentKey, assetName);
           await rm(commandPath, { force: true }).catch(() => {});
         }
       } else if (assetType === "rule") {
@@ -273,16 +293,7 @@ export async function runRemove(args: string[]): Promise<void> {
         }
 
         for (const agentKey of targetAgents) {
-          const agent = agents[agentKey];
-          const rulesSubdir = agent.rulesSubdir || "rules";
-          const agentDir = agent.skillsDir.split("/")[0] || agent.name;
-          const ext = agentKey === "cursor" ? ".mdc" : ".md";
-          const rulePath = join(
-            cwd,
-            `.${agentDir.replace(/^\./, "")}`,
-            rulesSubdir,
-            `${assetName}${ext}`,
-          );
+          const rulePath = getRulePath(cwd, agentKey, assetName);
           await rm(rulePath, { force: true }).catch(() => {});
         }
       }
