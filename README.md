@@ -108,6 +108,8 @@ adk add skill owner/repo --agent claude-code cursor  # Target specific agents
 # Commands and rules
 adk add command owner/repo
 adk add rule owner/repo
+
+# Note: --global is currently supported for skills only
 ```
 
 ### `adk remove`
@@ -169,6 +171,8 @@ adk update               # Interactive update
 adk update -g            # Update global assets
 adk update -y            # Skip confirmation prompt
 ```
+
+`adk check` / `adk update` support private GitHub repositories when `GITHUB_TOKEN` is set.
 
 ---
 
@@ -317,6 +321,7 @@ Some MCP servers require API keys:
 export SUPABASE_ACCESS_TOKEN="your-token"     # Supabase
 export MORPH_API_KEY="your-key"               # Morph (WarpGrep)
 export PERPLEXITY_API_KEY="your-key"          # Perplexity
+export GITHUB_TOKEN="ghp_..."                 # Private GitHub skill update checks
 ```
 
 ---

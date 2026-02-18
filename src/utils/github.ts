@@ -12,6 +12,20 @@ interface GitHubTreeResponse {
   truncated: boolean;
 }
 
+function buildGitHubHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.v3+json",
+    "User-Agent": "ai-devkit",
+  };
+
+  const token = process.env.GITHUB_TOKEN?.trim();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 /**
  * Parse an owner/repo string or GitHub URL into owner and repo.
  */
@@ -35,7 +49,7 @@ export function parseOwnerRepo(
 
 /**
  * Fetch the tree SHA for a specific folder path within a GitHub repo.
- * Uses the GitHub Trees API (no auth required for public repos).
+ * Uses the GitHub Trees API (supports optional GITHUB_TOKEN for private repos).
  *
  * Returns null if the path is not found or the API call fails.
  */
@@ -49,10 +63,7 @@ export async function fetchSkillFolderHash(
 
   try {
     const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        "User-Agent": "ai-devkit",
-      },
+      headers: buildGitHubHeaders(),
     });
 
     if (!response.ok) {
@@ -89,10 +100,7 @@ export async function fetchSkillFolderHashes(
 
   try {
     const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        "User-Agent": "ai-devkit",
-      },
+      headers: buildGitHubHeaders(),
     });
 
     if (!response.ok) {

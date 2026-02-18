@@ -5,6 +5,7 @@ import {
   readdir,
   rm,
   stat,
+  lstat,
   writeFile,
 } from "fs/promises";
 import { join, basename, normalize, resolve, sep } from "path";
@@ -77,11 +78,16 @@ async function copyDirectory(src: string, dest: string): Promise<void> {
       .map(async (entry) => {
         const srcPath = join(src, entry.name);
         const destPath = join(dest, entry.name);
+        const stats = await lstat(srcPath);
+
+        if (stats.isSymbolicLink()) {
+          throw new Error(`Symlinks are not allowed in skill content: ${srcPath}`);
+        }
 
         if (entry.isDirectory()) {
           await copyDirectory(srcPath, destPath);
         } else {
-          await cp(srcPath, destPath, { dereference: true, recursive: true });
+          await cp(srcPath, destPath, { recursive: false });
         }
       }),
   );

@@ -5,6 +5,18 @@ import { tmpdir } from "os";
 
 const CLONE_TIMEOUT_MS = 60000;
 
+export function validateGitCloneUrl(url: string): void {
+  const trimmed = url.trim();
+  if (!trimmed) {
+    throw new GitCloneError("Git URL cannot be empty.", url);
+  }
+
+  // Prevent argument injection via values interpreted as git flags.
+  if (trimmed.startsWith("-")) {
+    throw new GitCloneError("Invalid git URL.", url);
+  }
+}
+
 export class GitCloneError extends Error {
   readonly url: string;
   readonly isTimeout: boolean;
@@ -25,6 +37,8 @@ export class GitCloneError extends Error {
 }
 
 export async function cloneRepo(url: string, ref?: string): Promise<string> {
+  validateGitCloneUrl(url);
+
   const tempDir = await mkdtemp(join(tmpdir(), "adk-"));
   const git = simpleGit({ timeout: { block: CLONE_TIMEOUT_MS } });
   const cloneOptions = ref
