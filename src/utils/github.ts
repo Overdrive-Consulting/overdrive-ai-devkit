@@ -33,15 +33,21 @@ export function parseOwnerRepo(
   source: string,
 ): { owner: string; repo: string } | null {
   // Try GitHub URL: https://github.com/owner/repo...
-  const urlMatch = source.match(/github\.com\/([^/]+)\/([^/.]+)/);
+  const urlMatch = source.match(/github\.com\/([^/]+)\/([^/?#\s]+)/);
   if (urlMatch) {
-    return { owner: urlMatch[1]!, repo: urlMatch[2]! };
+    return {
+      owner: urlMatch[1]!,
+      repo: urlMatch[2]!.replace(/\.git$/, ""),
+    };
   }
 
   // Try shorthand: owner/repo or owner/repo@skill
   const shortMatch = source.match(/^([^/]+)\/([^/@\s]+)/);
   if (shortMatch && !source.includes(":") && !source.startsWith(".")) {
-    return { owner: shortMatch[1]!, repo: shortMatch[2]! };
+    return {
+      owner: shortMatch[1]!,
+      repo: shortMatch[2]!.replace(/\.git$/, ""),
+    };
   }
 
   return null;

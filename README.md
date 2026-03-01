@@ -69,7 +69,38 @@ The interactive wizard walks you through:
 3. **Choose skills** — Frontend design, TDD, debugging, code search, and more
 4. **Install commands** — `/deslop`, `/onboard`, `/security-audit`, `/visualize`
 5. **Add rules** — Framework-specific guidelines (Convex, UV)
-6. **Configure extras** — Beads issue tracker, Continuous Claude, Safety Net
+6. **Optional hardening** — Enable Safety Net (Claude Code) to block destructive commands
+
+---
+
+## Common Workflows
+
+### Bootstrap a new repo
+
+```bash
+adk init
+```
+
+### Install a community skill from GitHub
+
+```bash
+adk add skill owner/repo
+adk add skill owner/repo@skill-name
+```
+
+### Install commands/rules from a specific repo folder
+
+```bash
+adk add command https://github.com/owner/repo/tree/main/commands
+adk add rule https://github.com/owner/repo/tree/main/rules
+```
+
+### Keep GitHub-sourced skills up to date
+
+```bash
+adk check
+adk update
+```
 
 ---
 
@@ -108,6 +139,8 @@ adk add skill owner/repo --agent claude-code cursor  # Target specific agents
 # Commands and rules
 adk add command owner/repo
 adk add rule owner/repo
+adk add command https://github.com/owner/repo/tree/main/commands
+adk add rule https://github.com/owner/repo/tree/main/rules
 
 # Note: --global is currently supported for skills only
 ```
@@ -173,6 +206,7 @@ adk update -y            # Skip confirmation prompt
 ```
 
 `adk check` / `adk update` support private GitHub repositories when `GITHUB_TOKEN` is set.
+If verification fails (API/rate limit/network/path issues), the CLI reports a warning instead of falsely claiming everything is up to date.
 
 ---
 
@@ -326,6 +360,14 @@ export GITHUB_TOKEN="ghp_..."                 # Private GitHub skill update chec
 
 ---
 
+## Requirements
+
+- Node.js 18+ (or Bun runtime)
+- Git installed and available on PATH
+- Network access for GitHub/skills.sh installs and update checks
+
+---
+
 ## Safety Net (Claude Code)
 
 Optional protection layer that blocks destructive commands before execution. Based on [claude-code-safety-net](https://github.com/kenryu42/claude-code-safety-net).
@@ -367,9 +409,8 @@ ai-devkit/
 │   │   ├── shared.ts             # Shared installation logic
 │   │   ├── mcp.ts                # MCP server installer
 │   │   ├── rules.ts              # Rules installer
-│   │   ├── beads.ts              # Beads issue tracker
 │   │   ├── safety-net.ts         # Safety Net (Claude Code)
-│   │   └── continuous-claude.ts  # Session continuity
+│   │   └── ...
 │   ├── prompts/
 │   │   └── search-multiselect.ts # Fuzzy search multiselect UI
 │   └── utils/
@@ -384,7 +425,7 @@ ai-devkit/
 ├── rules/                        # Bundled framework rules
 ├── mcp/
 │   └── servers.json              # MCP server registry
-└── __tests__/                    # Test suite (54 tests)
+└── src/__tests__/                # Test suite
 ```
 
 ---

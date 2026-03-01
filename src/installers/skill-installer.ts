@@ -11,7 +11,7 @@ import {
 import { join, basename, normalize, resolve, sep } from "path";
 import { homedir } from "os";
 import type { Skill, AgentType } from "../types";
-import { agents, detectInstalledAgents } from "../agents";
+import { agents } from "../agents";
 import { AGENTS_DIR, SKILLS_SUBDIR } from "../constants";
 import { parseFrontmatter } from "../utils/frontmatter";
 import { readFile } from "fs/promises";
@@ -211,11 +211,11 @@ export async function listInstalledSkills(
   const cwd = options.cwd || process.cwd();
   const skillsMap = new Map<string, InstalledSkill>();
 
-  const detectedAgents = await detectInstalledAgents();
   const agentFilter = options.agentFilter;
-  const agentsToCheck = agentFilter
-    ? detectedAgents.filter((a) => agentFilter.includes(a))
-    : detectedAgents;
+  const agentsToCheck =
+    agentFilter && agentFilter.length > 0
+      ? agentFilter
+      : (Object.keys(agents) as AgentType[]);
 
   const scopeTypes: Array<{ global: boolean }> = [];
   if (options.global === undefined) {

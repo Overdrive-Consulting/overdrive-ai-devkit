@@ -204,9 +204,9 @@ export async function runAdd(
         parsed.ref,
       );
     } else if (type === "command") {
-      await addCommands(basePath, options, cwd, source);
+      await addCommands(basePath, parsed.subpath, options, cwd, source);
     } else if (type === "rule") {
-      await addRules(basePath, options, cwd, source);
+      await addRules(basePath, parsed.subpath, options, cwd, source);
     } else {
       p.log.error(`Adding MCP configs is not yet supported via add command.`);
       p.log.info("Use 'adk init' to configure MCP servers.");
@@ -472,7 +472,7 @@ async function addSkills(
   let folderHashes = new Map<string, string>();
 
   if (sourceType === "github" && ownerRepo) {
-    const { owner, repo } = parseOwnerRepo(source) || {};
+    const { owner, repo } = parseOwnerRepo(ownerRepo) || {};
     if (owner && repo) {
       const { relative } = await import("path");
       const skillPaths = successfullyInstalledSkills.map((s) =>
@@ -526,13 +526,17 @@ async function addSkills(
 
 async function addCommands(
   basePath: string,
+  subpath: string | undefined,
   options: AddOptions,
   cwd: string,
   source: string,
 ): Promise<void> {
+  const { join } = await import("path");
+  const searchBase = subpath ? join(basePath, subpath) : basePath;
+
   const spinner = p.spinner();
   spinner.start("Discovering commands...");
-  const commands = await discoverCommands(basePath);
+  const commands = await discoverCommands(searchBase);
   spinner.stop(`Found ${commands.length} command(s)`);
 
   if (commands.length === 0) {
@@ -544,7 +548,6 @@ async function addCommands(
   if (!targetAgents) return;
 
   const { ensureDir, writeFile } = await import("../utils/files");
-  const { join } = await import("path");
 
   const parsed = parseSource(source);
   for (const cmd of commands) {
@@ -582,13 +585,17 @@ async function addCommands(
 
 async function addRules(
   basePath: string,
+  subpath: string | undefined,
   options: AddOptions,
   cwd: string,
   source: string,
 ): Promise<void> {
+  const { join } = await import("path");
+  const searchBase = subpath ? join(basePath, subpath) : basePath;
+
   const spinner = p.spinner();
   spinner.start("Discovering rules...");
-  const rules = await discoverRules(basePath);
+  const rules = await discoverRules(searchBase);
   spinner.stop(`Found ${rules.length} rule(s)`);
 
   if (rules.length === 0) {
@@ -600,7 +607,6 @@ async function addRules(
   if (!targetAgents) return;
 
   const { ensureDir, writeFile } = await import("../utils/files");
-  const { join } = await import("path");
 
   const parsed = parseSource(source);
   for (const rule of rules) {

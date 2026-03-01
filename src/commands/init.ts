@@ -12,9 +12,7 @@ import {
   getSkillOptions,
   installForAgentType,
 } from "../installers/shared";
-import { installBeads } from "../installers/beads";
 import { getRuleOptions, installRules } from "../installers/rules";
-import { installContinuousClaude } from "../installers/continuous-claude";
 import { installSafetyNet } from "../installers/safety-net";
 import { agents, detectInstalledAgents } from "../agents";
 import { loadConfig } from "../config";
@@ -189,50 +187,7 @@ export async function runInit() {
     selectedRules = ruleResult as string[];
   }
 
-  // Step 6: Beads setup (keep as @clack/prompts)
-  const beadsChoice = await p.select({
-    message: "Set up beads (issue tracker for AI agents)?",
-    options: [
-      {
-        value: "full",
-        label: "Full CLI + Integration (Recommended)",
-        hint: "Install bd binary, init beads, configure hooks",
-      },
-      {
-        value: "mcp",
-        label: "MCP Server Only",
-        hint: "Just configure beads-mcp, install bd manually",
-      },
-      {
-        value: "skip",
-        label: "Skip",
-        hint: "Don't set up beads",
-      },
-    ],
-  });
-
-  if (p.isCancel(beadsChoice)) {
-    p.cancel("Setup cancelled");
-    process.exit(0);
-  }
-
-  // Step 7: Continuous Claude (Claude Code only)
-  let continuousClaudeChoice = false;
-  if (forClaude) {
-    const ccChoice = await p.confirm({
-      message:
-        "Set up Continuous Claude (session continuity & handoffs)? [Claude Code only]",
-    });
-
-    if (p.isCancel(ccChoice)) {
-      p.cancel("Setup cancelled");
-      process.exit(0);
-    }
-
-    continuousClaudeChoice = ccChoice;
-  }
-
-  // Step 8: Safety Net (Claude Code only)
+  // Step 6: Safety Net (Claude Code only)
   let safetyNetChoice = false;
   if (forClaude) {
     const snChoice = await p.confirm({
@@ -268,11 +223,7 @@ export async function runInit() {
   if (selectedRules.length > 0) {
     printInfo(`  Rules: ${selectedRules.join(", ")}`);
   }
-  printInfo(`  Beads: ${beadsChoice}`);
   if (forClaude) {
-    printInfo(
-      `  Continuous Claude: ${continuousClaudeChoice ? "yes" : "no"}`,
-    );
     printInfo(`  Safety Net: ${safetyNetChoice ? "yes" : "no"}`);
   }
 
@@ -326,28 +277,6 @@ export async function runInit() {
       forOpencode,
     });
     spinner.stop("Rules configured");
-  }
-
-  // Install beads
-  if (beadsChoice !== "skip") {
-    await installBeads({
-      targetDir,
-      mode: beadsChoice as "full" | "mcp",
-      forClaude,
-      forCursor,
-      forOpencode,
-    });
-  }
-
-  // Install continuous-claude
-  if (continuousClaudeChoice && forClaude) {
-    spinner.start("Setting up Continuous Claude...");
-    await installContinuousClaude({
-      targetDir,
-      install: continuousClaudeChoice,
-      forClaude,
-    });
-    spinner.stop("Continuous Claude configured");
   }
 
   // Install safety-net

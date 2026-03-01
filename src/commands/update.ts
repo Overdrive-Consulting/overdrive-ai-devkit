@@ -27,7 +27,7 @@ function getAssetName(lockKey: string): string {
   return lockKey.split(":").slice(1).join(":");
 }
 
-async function checkGitHubAssets(
+export async function checkGitHubAssets(
   projectDir?: string,
 ): Promise<CheckResult> {
   const lock = await readLockFile(projectDir);
@@ -106,6 +106,21 @@ async function checkGitHubAssets(
   return result;
 }
 
+function buildUpdateSource(candidate: UpdateCandidate): string {
+  const source = candidate.entry.sourceUrl || `${candidate.owner}/${candidate.repo}`;
+  const skillPath = candidate.entry.skillPath;
+
+  if (!skillPath) {
+    return source;
+  }
+
+  if (candidate.entry.sourceRef) {
+    return `https://github.com/${candidate.owner}/${candidate.repo}/tree/${candidate.entry.sourceRef}/${skillPath}`;
+  }
+
+  return `${candidate.owner}/${candidate.repo}/${skillPath}`;
+}
+
 export async function runCheck(args: string[]): Promise<void> {
   const isGlobal = args.includes("-g") || args.includes("--global");
   const cwd = process.cwd();
@@ -120,6 +135,16 @@ export async function runCheck(args: string[]): Promise<void> {
   spinner.stop("Check complete");
 
   if (result.outdated.length === 0) {
+    if (result.errors > 0 && result.upToDate === 0) {
+      p.log.warn(
+        pc.yellow(
+          `Could not verify updates (${result.errors} asset check error${result.errors === 1 ? "" : "s"}).`,
+        ),
+      );
+      p.log.info(pc.dim("Try again later or set GITHUB_TOKEN for higher rate limits."));
+      return;
+    }
+
     p.log.success(pc.green("Everything is up to date!"));
     if (result.upToDate > 0) {
       p.log.info(pc.dim(`${result.upToDate} asset(s) checked, all current`));
@@ -128,6 +153,13 @@ export async function runCheck(args: string[]): Promise<void> {
       p.log.info(
         pc.dim(
           `${result.skipped} asset(s) skipped (local or missing tracking data)`,
+        ),
+      );
+    }
+    if (result.errors > 0) {
+      p.log.warn(
+        pc.yellow(
+          `${result.errors} asset(s) could not be checked due to API/path errors`,
         ),
       );
     }
@@ -145,6 +177,13 @@ export async function runCheck(args: string[]): Promise<void> {
 
   if (result.upToDate > 0) {
     p.log.info(pc.dim(`${result.upToDate} asset(s) already up to date`));
+  }
+  if (result.errors > 0) {
+    p.log.warn(
+      pc.yellow(
+        `${result.errors} asset(s) could not be checked due to API/path errors`,
+      ),
+    );
   }
 
   p.log.info(pc.dim("Run 'adk update' to apply updates"));
@@ -164,9 +203,25 @@ export async function runUpdate(args: string[] = []): Promise<void> {
 
   if (result.outdated.length === 0) {
     spinner.stop("Check complete");
+    if (result.errors > 0 && result.upToDate === 0) {
+      p.log.warn(
+        pc.yellow(
+          `Could not verify updates (${result.errors} asset check error${result.errors === 1 ? "" : "s"}).`,
+        ),
+      );
+      p.log.info(pc.dim("Try again later or set GITHUB_TOKEN for higher rate limits."));
+      return;
+    }
     p.log.success(pc.green("Everything is up to date!"));
     if (result.upToDate > 0) {
       p.log.info(pc.dim(`${result.upToDate} asset(s) checked, all current`));
+    }
+    if (result.errors > 0) {
+      p.log.warn(
+        pc.yellow(
+          `${result.errors} asset(s) could not be checked due to API/path errors`,
+        ),
+      );
     }
     return;
   }
@@ -204,11 +259,10 @@ export async function runUpdate(args: string[] = []): Promise<void> {
   for (const candidate of result.outdated) {
     const name = getAssetName(candidate.key);
     try {
+      const updateSource = buildUpdateSource(candidate);
       const addArgs = [
         candidate.entry.type,
-        candidate.entry.sourceUrl || `${candidate.owner}/${candidate.repo}`,
-        "--skill",
-        name,
+        updateSource,
         "--yes",
       ];
 

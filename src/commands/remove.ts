@@ -3,7 +3,7 @@ import pc from "picocolors";
 import { readdir, rm, lstat } from "fs/promises";
 import { join } from "path";
 import { homedir } from "os";
-import { agents, detectInstalledAgents } from "../agents";
+import { agents } from "../agents";
 import {
   readLockFile,
   removeAssetFromLock,
@@ -210,10 +210,7 @@ export async function runRemove(args: string[]): Promise<void> {
     }
     targetAgents = options.agent as AgentType[];
   } else {
-    targetAgents = await detectInstalledAgents();
-    if (targetAgents.length === 0) {
-      targetAgents = Object.keys(agents) as AgentType[];
-    }
+    targetAgents = Object.keys(agents) as AgentType[];
   }
 
   // Confirm
